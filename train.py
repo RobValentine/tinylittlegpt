@@ -22,15 +22,15 @@ def sha256sum(filename):
     return h.hexdigest()
 
 # ----- Training config -----
-batch_size = 16
-block_size = 128
-learning_rate = 3e-4
-epochs = 1
-eval_interval = 250
-device = "cuda" if torch.cuda.is_available() else "cpu"
+batch_size = config["batch_size"]
+block_size = config["block_size"]
+learning_rate = config["learning_rate"]
+epochs = config["epochs"]
+eval_interval = config["eval_interval"]
+device =config["device"]
 
 # ----- Load dataset -----
-train_path = "data/train.bin"
+train_path = config["train_path"]
 print(f"Loading dataset: {train_path}")
 dataset = CodeDataset(train_path, block_size)
 loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)

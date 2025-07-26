@@ -9,9 +9,10 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'c
 from config import config
 
 # Paths
-corpus_path = "data/python_code.txt"
-tokenizer_save_path = "tokenizer/tokenizer.json"
+corpus_path = config["corpus_path"]
+tokenizer_save_path =  config["tokenizer_path"]
 vocab_size = config["vocab_size"]
+
 
 # Initialize components
 tokenizer = Tokenizer(models.BPE())

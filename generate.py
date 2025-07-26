@@ -66,9 +66,9 @@ if __name__ == "__main__":
 
     print("\nPrompt:", prompt)
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device(config["device"])
     model = GPT(config)
-    model.load_state_dict(torch.load("gpt_model.pt", map_location=device))
+    model.load_state_dict(torch.load(config["gen_model_path"], map_location=device))
     model.eval()
     model.to(device)
 

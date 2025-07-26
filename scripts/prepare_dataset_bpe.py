@@ -3,6 +3,9 @@ import numpy as np
 import os
 import time
 from tqdm import tqdm
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'config')))
+from config import config
 
 def encode_file_lines(input_path, tokenizer, debug=False):
     token_ids = []
@@ -63,9 +66,9 @@ def prepare_dataset(input_path, vocab_path, merges_path, output_path, debug=Fals
 
 if __name__ == "__main__":
     prepare_dataset(
-        input_path="data/python_code.txt", #Change this to whatever corpus yhou're using. This is just for my small test sample to check shit isn't broken
-        vocab_path="tokenizer_bpe/vocab.json",
-        merges_path="tokenizer_bpe/merges.txt",
-        output_path="data/train_bpe.bin",
-        debug=True  # Set False when you're not inspecting stuff. Will output a LOT
+        input_path=config["corpus_path"],
+        vocab_path=config["vocab_path"],
+        merges_path=config["merges_path"],
+        output_path=config["bin_path"],
+        debug=config["debug"]
     )

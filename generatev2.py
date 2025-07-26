@@ -70,8 +70,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     tokenizer = ByteLevelBPETokenizer(
-        "tokenizer_bpe/vocab.json",
-        "tokenizer_bpe/merges.txt"
+        config["vocab_path"],
+        config["merges_path"]
     )
 
     prompt = args.prompt.strip()
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = GPT(config)
-    model.load_state_dict(torch.load("gpt_model.pt", map_location=device))
+    model.load_state_dict(torch.load(config["gen_model_path"], map_location=device))
     model.eval()
     model.to(device)
 

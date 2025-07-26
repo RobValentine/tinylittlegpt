@@ -34,6 +34,9 @@ data/*.txt
 data/*.parquet
 data/*.json
 
+# EXCEPT this one specific file
+!data/tiny_python_code.txt
+
 # Cache + HuggingFace
 .cache/
 *.cache/

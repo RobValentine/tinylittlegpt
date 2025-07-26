@@ -21,8 +21,8 @@ def sample_corpus(input_path, output_path, num_lines=10000000, shuffle=True):
 
 if __name__ == "__main__":
     sample_corpus(
-        input_path="data/stack_python_extracted.txt",
-        output_path="data/python_subset_10m.txt",
-        num_lines=10_000_000,  # You can change this to 20_000_000, etc.
+        input_path=config["sample_input_path"],
+        output_path=config["sample_output_path"],
+        num_lines=config["sample_lines"],  
         shuffle=True
     )

@@ -4,8 +4,8 @@ import pandas as pd
 from tqdm import tqdm
 
 # Configure this dir properly - it'll be similar but the hash will be different
-parquet_dir = os.path.expanduser("~/.cache/huggingface/hub/datasets--bigcode--the-stack/snapshots/349a71353fd5868fb90b593ef09e311379da498a")
-output_txt = "data/stack_python_extracted.txt"
+parquet_dir = os.path.expanduser(config["parquet_path"])
+output_txt = config["ingestion_output_path"]
 
 # Recursively find all Python parquet files in the cache
 def find_python_parquets(base_dir):

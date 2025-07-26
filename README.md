@@ -8,6 +8,8 @@ You can get a feel for how it works by just chucking some python code into a txt
 
 I've deliberately left full debug output on so you can see the tokenization process, the "surprise" and loss factors and so on. You can turn those off if you just want a clean output.
 
+The v1 versions of things have not had nearly as much love so you may encounter broken things.
+
 ## Setup
 
 This project uses [uv](https://github.com/astral-sh/uv) for Python package management. Seriously, use uv. It's so much faster. After cloning the repository install `uv`, create a virtual environment and install the dependencies:

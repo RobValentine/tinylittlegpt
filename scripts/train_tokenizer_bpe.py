@@ -5,8 +5,8 @@ from config import config
 from tokenizers import ByteLevelBPETokenizer
 
 # Settings
-corpus_path = "data/python_code.txt"
-output_dir = "tokenizer_bpe"
+corpus_path = config["corpus_path"]
+output_dir =  config["tokenizer_path"]
 vocab_size = config["vocab_size"]
 
 
