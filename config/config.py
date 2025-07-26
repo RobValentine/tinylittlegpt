@@ -1,13 +1,13 @@
 config = {
-    "debug": False, # Set False when you're not inspecting stuff. Will output a LOT
+    "debug": True, # Set False when you're not inspecting stuff. Will output a LOT
 
     #ingestion parameters
     "parquet_path":"~/.cache/huggingface/hub/datasets--bigcode--the-stack/snapshots/349a71353fd5868fb90b593ef09e311379da498a",
     "ingestion_output_path":"data/stack_python_extracted.txt",  # Path to save all extracted Python from The Stack
 
     "sample_input_path":"data/stack_python_extracted.txt",  # The big extracted file to sample from
-    "sample_output_path":"data/python_subset_10m.txt",  # Output of the sampled subset
-    "sample_lines":"10_000_000", # You can change this to 20_000_000, etc. for larger sample sizes from your overall corpus
+    "sample_output_path":"data/python_subset_100k.txt",  # Output of the sampled subset
+    "sample_lines":"10_000_00", # You can change this to 20_000_000, etc. for larger sample sizes from your overall corpus
 
     "vocab_size": 50257,       # Will match tokenizer
     "context_length": 512,     # How many tokens it can look at

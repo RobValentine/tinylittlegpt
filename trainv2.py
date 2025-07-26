@@ -4,6 +4,7 @@ import torch
 import hashlib
 import math
 import time
+import json
 from torch.utils.data import DataLoader
 from model.transformer import GPT
 from dataset import CodeDataset
@@ -28,13 +29,69 @@ block_size = config["block_size"]
 learning_rate = config["learning_rate"]
 epochs = config["epochs"]
 eval_interval = config["eval_interval"]
-device =config["device"]
+device = config["device"]
+train_path = config["train_path"]
+final_model_path = config["final_model_path"]
+checkpoint_dir = config["checkpoint_dir"]
+
+# ----- Pre-check: Predict training time if possible -----
+os.makedirs("benchmarks", exist_ok=True)
+benchmark_file = os.path.join("benchmarks", f"benchmark_{os.path.basename(train_path)}.json")
+
+predicted_time = None
+if os.path.exists(benchmark_file):
+    with open(benchmark_file, 'r') as f:
+        previous = json.load(f)
+    if config.get("debug"):
+        print(f"[DEBUG] Loaded benchmark file: {benchmark_file}")
+        print(f"[DEBUG] Previous benchmark contents: {previous}")
+    steps_recorded = previous.get("steps_recorded", 0)
+    duration = previous.get("duration_sec", 0)
+    if (
+        duration > 0 and steps_recorded > 0 and
+        previous.get("block_size") == block_size and
+        previous.get("batch_size") == batch_size and
+        previous.get("epochs") == epochs
+    ):
+        steps = previous.get("steps", [])
+        avg_time_per_step = duration / max(1, len(steps))
+        total_tokens_est = os.path.getsize(train_path) * 2
+        steps_per_epoch_est = max(1, total_tokens_est // (block_size * batch_size))
+        max_iters_est = max(1, steps_per_epoch_est * epochs)
+        predicted_time = avg_time_per_step * max_iters_est
+
+if predicted_time:
+    print(f"Estimated training time: ~{predicted_time / 60:.1f} minutes")
+else:
+    print("Estimated training time: Unknown (no prior benchmark)")
+
+user_input = input("Do you want to continue training? [Y/n] ").strip().lower()
+if user_input == 'n':
+    print("Aborting training.")
+    exit()
+
+# ----- Check if model already exists -----
+if os.path.exists(final_model_path):
+    overwrite = input(f"Model file {final_model_path} already exists. Overwrite? [y/N] ").strip().lower()
+    if overwrite not in ('y', 'yes'):
+        print("Aborting to avoid overwriting model.")
+        exit()
 
 # ----- Load dataset -----
-train_path = config["train_path"]
 print(f"Loading dataset: {train_path}")
 dataset = CodeDataset(train_path, block_size)
 loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
+# ----- Benchmark setup -----
+benchmark_data = {
+    "dataset": train_path,
+    "total_tokens": dataset.total_tokens,
+    "block_size": block_size,
+    "batch_size": batch_size,
+    "epochs": epochs,
+    "start_time": time.time(),
+    "steps": []
+}
 
 total_tokens = dataset.total_tokens
 steps_per_epoch = total_tokens // (block_size * batch_size)
@@ -56,7 +113,6 @@ model = GPT(config).to(device)
 optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
 loss_fn = torch.nn.CrossEntropyLoss()
 
-checkpoint_dir = "checkpoints"
 os.makedirs(checkpoint_dir, exist_ok=True)
 step = 0
 resume_step = 0
@@ -80,13 +136,14 @@ for ckpt in checkpoints:
                 optimizer.load_state_dict(full_ckpt["optimizer"])
                 step = int(re.search(r"\d+", ckpt).group())
                 resume_step = step
-                resumed = False
+                resumed = True
                 break
 
 if not resumed:
     print("Starting fresh.")
 
 start_time = time.time()
+latest_loss = None
 
 # ----- Training loop -----
 print("\nBeginning training...")
@@ -98,20 +155,29 @@ while step < max_iters:
         x, y = x.to(device), y.to(device)
         logits = model(x)
         loss = loss_fn(logits.view(-1, logits.size(-1)), y.view(-1))
+        latest_loss = loss
 
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
+        elapsed = time.time() - start_time
+
         if step % eval_interval == 0:
-            elapsed = time.time() - start_time
             steps_done = step - resume_step
             steps_remaining = max_iters - step
             steps_per_sec = steps_done / max(elapsed, 1e-8)
             eta = steps_remaining / steps_per_sec if steps_per_sec > 0 else float('inf')
-            
-            # Still wildly inaccurate but now inaccurate in a cooler script. Still good enough.
-            print(f"Step {step:>6} | Loss: {loss.item():.4f} | ~{estimated_confidence(loss):.1f}% confidence | ETA: {eta/60:.1f} min")            
+
+            confidence = estimated_confidence(loss)
+            print(f"Step {step:>6} | Loss: {loss.item():.4f} | ~{confidence:.1f}% confidence | ETA: {eta/60:.1f} min")
+
+            benchmark_data["steps"].append({
+                "step": step,
+                "loss": loss.item(),
+                "confidence": confidence,
+                "elapsed": elapsed
+            })
 
         if step % 1000 == 0 and step > 0:
             checkpoint_path = os.path.join(checkpoint_dir, f"gpt_model_step_{step}.pt")
@@ -127,6 +193,24 @@ while step < max_iters:
 
         step += 1
 
+if not benchmark_data["steps"] and latest_loss is not None:
+    elapsed = time.time() - start_time
+    benchmark_data["steps"].append({
+        "step": step,
+        "loss": latest_loss.item(),
+        "confidence": estimated_confidence(latest_loss),
+        "elapsed": elapsed
+    })
+
 # ----- Final save -----
-torch.save(model.state_dict(), config["final_model_path"])
-print(f"\nTraining complete! Final model saved as: {config['final_model_path']}")
+torch.save(model.state_dict(), final_model_path)
+print(f"\nTraining complete! Final model saved as: {final_model_path}")
+
+# ----- Write benchmark report -----
+benchmark_data["end_time"] = time.time()
+benchmark_data["duration_sec"] = benchmark_data["end_time"] - benchmark_data["start_time"]
+benchmark_data["steps_recorded"] = len(benchmark_data["steps"])
+with open(benchmark_file, 'w') as f:
+    json.dump(benchmark_data, f, indent=2)
+
+print(f"Benchmark saved to {benchmark_file}")

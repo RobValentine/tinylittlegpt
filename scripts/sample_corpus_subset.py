@@ -1,6 +1,10 @@
 import random
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'config')))
+from config import config
 
-def sample_corpus(input_path, output_path, num_lines=10000000, shuffle=True):
+def sample_corpus(input_path, output_path, num_lines=config["sample_lines"], shuffle=True):
     print(f"Reading from: {input_path}")
     with open(input_path, 'r', encoding='utf-8') as f:
         lines = f.readlines()
