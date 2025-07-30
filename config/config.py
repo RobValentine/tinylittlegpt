@@ -2,9 +2,9 @@ config = {
     "debug": False, # Set False when you're not inspecting stuff. Will output a LOT
 
     #ingestion parameters    
-    "dataset":"storytracer/LoC-PD-Books",
-    "dataset_path": None,
-    "parquet_path":"~/.cache/huggingface/hub/datasets--storytracer--LoC-PD-Books/snapshots/5f1f4ee054362bcddbb56640c6beb67a92a0bf41/data",
+    "dataset":"storytracer/LoC-PD-Books",  # Hugging Face dataset name
+    "dataset_path": None,  # Set to a local directory to load the dataset from disk
+    "parquet_path":"~/.cache/huggingface/hub/datasets--storytracer--LoC-PD-Books/snapshots/5f1f4ee054362bcddbb56640c6beb67a92a0bf41/data",  # Directory where downloaded parquet files will be stored
     "ingestion_output_path":"data/stack_books_extracted.txt",  # Path to save all extracted Python from The Stack
     "language_filter": None,  # Set to None (the value, not a string) to extract from all langs
     "content_column": "text",  # Change if your parquet format differs

@@ -29,8 +29,8 @@ uv pip install pyarrow
 
 ## Preparing Data
 
-1. **Ingest code** (optional): The `ingestion/ingest.py` script downloads Python code from [the‑stack](https://huggingface.co/datasets/bigcode/the-stack) using the `datasets` library. It caches files in `~/.cache/huggingface`.
-**Warning:** The full dataset contains 206 parquet files roughly 300MB each, so the complete download is quite large.
+1. **Ingest code** (optional): The `ingestion/ingest.py` script downloads the dataset configured in `config/config.py`. If `dataset_path` is set it will load from that directory instead of fetching from Hugging Face. The downloaded split is saved to `parquet_path` so the extraction script can process the parquet files.
+**Warning:** Large datasets may require significant disk space and download time.
 
 2. **Extract text**: Use `scripts/extract_parquets_to_text.py` to convert downloaded parquet files to a plain text corpus.
 3. **Sample subset** (optional): `scripts/sample_corpus_subset.py` allows you to sample a subset of the corpus if the extracted text is very large.
@@ -68,7 +68,7 @@ Both scripts load `gpt_model.pt` by default and print top‑k predictions at eac
 - `train.py`, `trainv2.py` – Training scripts (character‑level and BPE)
 - `generate.py`, `generatev2.py` – Text generation utilities
 - `scripts/` – Helper scripts for tokenizer training and dataset preparation
-- `ingestion/` – Example ingestion script for the-stack dataset
+- `ingestion/` – Example ingestion script for downloading Hugging Face datasets
 
 Enjoy experimenting with this tiny GPT model!
 
