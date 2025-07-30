@@ -116,8 +116,7 @@ else:
     print("\nOutput:")
     print(decoded)
 
-
-    if args.output_file:
-        with open(args.output_file, "w") as f:
-            f.write(final_output)
-        print(f"\nOutput written to {args.output_file}")
+if args.output_file:
+    with open(args.output_file, "w") as f:
+        f.write(final_output)
+    print(f"\nOutput written to {args.output_file}")
