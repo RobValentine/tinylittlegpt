@@ -9,7 +9,7 @@ from torch.nn.utils import clip_grad_norm_
 from torch.cuda.amp import GradScaler, autocast
 
 from model.transformer import GPT
-from model.layers import GPTDataset
+from dataset import CodeDataset
 from config import config
 
 # Logging
@@ -27,7 +27,7 @@ random.seed(config["seed"])
 model = GPT(config).to(device)
 
 # Dataset
-dataset = GPTDataset(config["dataset_path"], config["block_size"])
+dataset = CodeDataset(config["train_path"], config["block_size"])
 loader = DataLoader(dataset, batch_size=config["batch_size"], shuffle=True)
 
 # Optimizer and Loss
