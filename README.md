@@ -37,7 +37,7 @@ uv pip install pyarrow
 
 4. **Train tokenizer**: You can train a byte‑level BPE tokenizer using `scripts/train_tokenizer_bpe.py` or a smaller character‑level tokenizer with `scripts/train_tokenizer_character_level.py`.
 
-5. **Create binary dataset**: Convert the text corpus into a binary token dataset using `scripts/prepare_dataset.py` (character level) or `scripts/prepare_dataset_bpe.py` (BPE). The resulting file will be saved as `data/train.bin` or `data/train_bpe.bin`.
+5. **Create binary dataset**: Convert the text corpus into a binary token dataset using `scripts/prepare_dataset.py` (character level) or `scripts/prepare_dataset_bpe.py` (BPE). The resulting file will be saved as `data/train.bin` or `data/train_books_bpe.bin`.
 
 ## Training
 
