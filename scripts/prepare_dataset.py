@@ -66,7 +66,7 @@ def prepare_dataset(input_path, tokenizer_path, output_path, debug=False):
 if __name__ == "__main__":
     prepare_dataset(
         input_path=config["corpus_path"],
-        tokenizer_path=config["tokenizer_path"]
+        tokenizer_path=config["tokenizer_path"],
         output_path=config["bin_path"],
         debug=config["debug"] 
     )
