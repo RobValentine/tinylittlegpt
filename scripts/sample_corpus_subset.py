@@ -12,7 +12,7 @@ def sample_corpus(input_path, output_path, num_lines=config["sample_lines"], shu
     print(f"Total lines in corpus: {len(lines):,}")
 
     if shuffle:
-        print(f"Shuffling and sampling {num_lines:,} lines...")
+        print(f"Shuffling and sampling {num_lines} lines...")
         random.shuffle(lines)
 
     sampled = lines[:num_lines]
@@ -27,6 +27,6 @@ if __name__ == "__main__":
     sample_corpus(
         input_path=config["sample_input_path"],
         output_path=config["sample_output_path"],
-        num_lines=config["sample_lines"],  
+        num_lines = int(config["sample_lines"].replace("_", "")),
         shuffle=True
     )

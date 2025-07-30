@@ -17,18 +17,20 @@ def estimated_confidence(loss):
 def generate(model, input_ids, tokenizer, device, max_new_tokens=64, temperature=1.0, top_k=5, readable_output=True):
     model.eval()
     generated = input_ids[:]
-
+    
     for step in range(max_new_tokens):
         input_tensor = torch.tensor([generated[-config["block_size"]:]], dtype=torch.long).to(device)
         with torch.no_grad():
             logits = model(input_tensor)
+        logits = logits[:, -1, :]  # Focus on last token
+        logits = torch.clamp(logits, min=-10, max=10)
+        logits = logits / temperature
 
-        logits = logits[:, -1, :] / temperature
         probs = torch.softmax(logits, dim=-1)
-        # Apply repetition penalty
-        for token_id in set(generated):
-            probs[0, token_id] *= 0.8  # You can tune this factor (0.7–0.95 range)
 
+        for token_id in set(generated):
+            if token_id < probs.shape[1]:
+                probs[0, token_id] *= 0.6
 
         topk_probs, topk_indices = torch.topk(probs, k=top_k, dim=-1)
 
@@ -82,10 +84,26 @@ if __name__ == "__main__":
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    assert tokenizer.get_vocab_size() == config["vocab_size"], \
+    f"Tokenizer vocab size {tokenizer.get_vocab_size()} doesn't match model config vocab size {config['vocab_size']}"
+
+    print("Tokenizer vocab size:", tokenizer.get_vocab_size())
+    print("Model config vocab size:", config["vocab_size"])
+    assert tokenizer.get_vocab_size() == config["vocab_size"]
+
     model = GPT(config)
     model.load_state_dict(torch.load(config["gen_model_path"], map_location=device))
     model.eval()
     model.to(device)
+
+    print("\n📊 Embedding weight stats:")
+    print("Mean:", model.token_embedding.weight.mean().item())
+    print("Std:", model.token_embedding.weight.std().item())    
+
+    state_dict = torch.load(config["gen_model_path"], map_location=device)
+    missing_keys, unexpected_keys = model.load_state_dict(state_dict, strict=False)
+    print("Missing keys:", missing_keys)
+    print("Unexpected keys:", unexpected_keys)
 
     output_ids = generate(
         model, input_ids, tokenizer, device,
