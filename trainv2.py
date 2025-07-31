@@ -6,7 +6,8 @@ import logging
 from torch.utils.data import DataLoader
 from torch.nn import CrossEntropyLoss
 from torch.nn.utils import clip_grad_norm_
-from torch.amp import GradScaler, autocast
+# Use CUDA AMP utilities for mixed precision training
+from torch.cuda.amp import GradScaler, autocast
 
 from model.transformer import GPT
 from dataset import CodeDataset
@@ -33,7 +34,8 @@ loader = DataLoader(dataset, batch_size=config["batch_size"], shuffle=True)
 # Optimizer and Loss
 optimizer = torch.optim.AdamW(model.parameters(), lr=config["learning_rate"])
 loss_fn = CrossEntropyLoss()
-scaler = GradScaler(device_type=device.type)
+# Enable scaling only when running on CUDA
+scaler = GradScaler(enabled=(device.type == "cuda"))
 
 # Training loop
 global_step = 0
@@ -49,7 +51,7 @@ for epoch in range(config["epochs"]):
 
         optimizer.zero_grad()
 
-        with autocast(device.type):
+        with autocast():
             logits = model(input_ids)
             loss = loss_fn(logits.view(-1, logits.size(-1)), targets.view(-1))
 
