@@ -8,7 +8,8 @@ from torch.utils.data import DataLoader
 from torch.nn import CrossEntropyLoss
 from torch.nn.utils import clip_grad_norm_
 # Use CUDA AMP utilities for mixed precision training
-from torch.cuda.amp import GradScaler, autocast
+# Updated AMP imports for torch>=2.7
+from torch.amp import GradScaler, autocast
 
 from model.transformer import GPT
 from dataset import CodeDataset
@@ -36,6 +37,8 @@ model = GPT(config).to(device)
 global_step = 0
 resume_ckpt = None
 checkpoint_dir = config["checkpoint_dir"]
+# Ensure the checkpoint directory exists
+os.makedirs(checkpoint_dir, exist_ok=True)
 
 # Scan and find latest good checkpoint (excluding known bad)
 all_ckpts = sorted([
@@ -67,7 +70,7 @@ loader = DataLoader(dataset, batch_size=config["batch_size"], shuffle=True)
 optimizer = torch.optim.AdamW(model.parameters(), lr=config["learning_rate"])
 loss_fn = CrossEntropyLoss()
 # Enable scaling only when running on CUDA
-scaler = GradScaler(enabled=(device.type == "cuda"))
+scaler = GradScaler(device=device.type, enabled=(device.type == "cuda"))
 
 # Training loop
 model.train()
@@ -82,7 +85,7 @@ for epoch in range(config["epochs"]):
 
         optimizer.zero_grad()
 
-        with autocast():
+        with autocast(device_type=device.type):
             logits = model(input_ids)
             loss = loss_fn(logits.view(-1, logits.size(-1)), targets.view(-1))
             if loss.item() > 20:
