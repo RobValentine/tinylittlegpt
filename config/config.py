@@ -33,7 +33,7 @@ config = {
 
     # Training-specific parameters
     "batch_size": 16,  # Number of training examples per batch (higher = faster but uses more GPU RAM)
-    "learning_rate": 3e-4,  # Base learning rate for optimizer
+    "learning_rate": 2e-5,  # Base learning rate for optimizer
     "epochs": 3,  # Full passes over dataset
     "eval_interval": 250,  # How often to print loss/checkpoint during training
     "num_workers": 6,  # Number of worker processes for data loading
@@ -49,8 +49,8 @@ config = {
     "final_model_path": "gpt_book_model.pt",
 
     # Reproducibility
-    "seed": None,            # or e.g. 42
-    "deterministic": False,  # torch.backends.cudnn.deterministic
+    "seed": 42,            # or e.g. 42
+    "deterministic": True,  # torch.backends.cudnn.deterministic
 
     # Checkpointing
     "checkpoint_interval": 1000,  # steps between saves
